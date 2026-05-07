@@ -44,8 +44,7 @@ export type ConnectorToolDescriptor = {
 }
 
 export type ConnectorSnapshot = {
-	/** Logical connector kind. Omitted legacy snapshots are treated as `home`. */
-	connectorKind?: string
+	connectorKind: string
 	connectorId: string
 	connectedAt: string
 	lastSeenAt: string
@@ -54,10 +53,9 @@ export type ConnectorSnapshot = {
 
 export type ConnectorHelloMessage = {
 	type: 'connector.hello'
+	connectorKind: string
 	connectorId: string
 	sharedSecret: string
-	/** Omit or set to `home` for the legacy home connector route. */
-	connectorKind?: string
 }
 
 export type ConnectorHeartbeatMessage = {
@@ -119,25 +117,24 @@ export function parseConnectorMessage(
 	if (type === 'connector.hello') {
 		const connectorId = record['connectorId']
 		const sharedSecret = record['sharedSecret']
-		const hasConnectorKindKey = Object.hasOwn(record, 'connectorKind')
 		const connectorKindRaw = record['connectorKind']
-		if (hasConnectorKindKey && typeof connectorKindRaw !== 'string') {
+		if (
+			typeof connectorKindRaw !== 'string' ||
+			!connectorKindRaw.trim()
+		) {
 			throw new Error(
-				'Invalid connector hello: connectorKind must be a string.',
+				'Invalid connector hello: connectorKind must be a non-empty string.',
 			)
 		}
-		const connectorKind =
-			typeof connectorKindRaw === 'string' && connectorKindRaw.trim()
-				? connectorKindRaw.trim().toLowerCase()
-				: undefined
+		const connectorKind = connectorKindRaw.trim().toLowerCase()
 		if (typeof connectorId !== 'string' || typeof sharedSecret !== 'string') {
 			throw new Error('Invalid connector hello payload.')
 		}
 		return {
 			type,
+			connectorKind,
 			connectorId,
 			sharedSecret,
-			...(connectorKind ? { connectorKind } : {}),
 		}
 	}
 	if (type === 'connector.heartbeat') {

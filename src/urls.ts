@@ -14,19 +14,10 @@ function trimTrailingSlash(value: string) {
 
 /**
  * Stable Durable Object id segment for a remote connector WebSocket session.
- *
- * `home` connector ids without `:` intentionally stay unprefixed for legacy
- * compatibility with the first shipped Kody connector.
  */
 export function connectorSessionKey(kind: string, instanceId: string): string {
 	const k = kind.trim().toLowerCase()
 	const id = instanceId.trim()
-	if (k === 'home') {
-		if (id.includes(':')) {
-			return `home:${id}`
-		}
-		return id
-	}
 	return `${k}:${id}`
 }
 
@@ -53,29 +44,12 @@ export function parseConnectorRoutePath(
 		return { kind, instanceId, rest }
 	}
 
-	if (
-		parts.length >= 3 &&
-		parts[0] === 'home' &&
-		parts[1] === 'connectors' &&
-		parts[2]
-	) {
-		const decodedInstanceId = decodeSegment(parts[2])
-		if (!decodedInstanceId) return null
-		const instanceId = decodedInstanceId.trim()
-		if (!instanceId) return null
-		const rest = parts.length > 3 ? `/${parts.slice(3).join('/')}` : ''
-		return { kind: 'home', instanceId, rest }
-	}
-
 	return null
 }
 
 export function connectorIngressPath(kind: string, instanceId: string): string {
 	const k = kind.trim().toLowerCase()
 	const id = encodeURIComponent(instanceId.trim())
-	if (k === 'home') {
-		return `/home/connectors/${id}`
-	}
 	return `/connectors/${encodeURIComponent(k)}/${id}`
 }
 

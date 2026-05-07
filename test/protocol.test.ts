@@ -14,14 +14,14 @@ test('parses connector hello messages and normalizes kind', () => {
 		parseConnectorMessage(
 			JSON.stringify({
 				type: 'connector.hello',
-				connectorKind: ' HOME ',
+				connectorKind: ' CUSTOM ',
 				connectorId: 'default',
 				sharedSecret: 'secret',
 			}),
 		),
 		{
 			type: 'connector.hello',
-			connectorKind: 'home',
+			connectorKind: 'custom',
 			connectorId: 'default',
 			sharedSecret: 'secret',
 		},
@@ -74,7 +74,13 @@ test('stringifies server messages', () => {
 
 test('rejects invalid connector messages', () => {
 	assert.throws(
-		() => parseConnectorMessage(JSON.stringify({ type: 'connector.hello' })),
+		() =>
+			parseConnectorMessage(
+				JSON.stringify({
+					type: 'connector.hello',
+					connectorKind: 'custom',
+				}),
+			),
 		/Invalid connector hello payload/,
 	)
 	assert.throws(
@@ -87,7 +93,18 @@ test('rejects invalid connector messages', () => {
 					sharedSecret: 'secret',
 				}),
 			),
-		/connectorKind must be a string/,
+		/connectorKind must be a non-empty string/,
+	)
+	assert.throws(
+		() =>
+			parseConnectorMessage(
+				JSON.stringify({
+					type: 'connector.hello',
+					connectorId: 'default',
+					sharedSecret: 'secret',
+				}),
+			),
+		/connectorKind must be a non-empty string/,
 	)
 	assert.throws(
 		() => parseConnectorMessage(JSON.stringify({ type: 'unknown' })),

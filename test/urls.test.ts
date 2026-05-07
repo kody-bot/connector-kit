@@ -8,9 +8,9 @@ import {
 	parseConnectorRoutePath,
 } from '../src/urls.ts'
 
-test('preserves legacy home connector session keys', () => {
-	assert.equal(connectorSessionKey('home', 'default'), 'default')
-	assert.equal(connectorSessionKey('HOME', 'living-room'), 'living-room')
+test('creates connector session keys', () => {
+	assert.equal(connectorSessionKey('home', 'default'), 'home:default')
+	assert.equal(connectorSessionKey('HOME', 'living-room'), 'home:living-room')
 	assert.equal(
 		connectorSessionKey('home', 'other:default'),
 		'home:other:default',
@@ -18,12 +18,7 @@ test('preserves legacy home connector session keys', () => {
 	assert.equal(connectorSessionKey('custom', 'alpha'), 'custom:alpha')
 })
 
-test('parses legacy and generic connector routes', () => {
-	assert.deepEqual(parseConnectorRoutePath('/home/connectors/default'), {
-		kind: 'home',
-		instanceId: 'default',
-		rest: '',
-	})
+test('parses connector routes', () => {
 	assert.deepEqual(
 		parseConnectorRoutePath('/connectors/custom/alpha/rpc/tools-list'),
 		{
@@ -32,14 +27,18 @@ test('parses legacy and generic connector routes', () => {
 			rest: '/rpc/tools-list',
 		},
 	)
-	assert.equal(parseConnectorRoutePath('/home/connectors'), null)
+	assert.deepEqual(parseConnectorRoutePath('/connectors/home/default'), {
+		kind: 'home',
+		instanceId: 'default',
+		rest: '',
+	})
 	assert.equal(parseConnectorRoutePath('/connectors/custom'), null)
 })
 
 test('creates connector ingress and absolute session URLs', () => {
 	assert.equal(
 		connectorIngressPath('home', 'default'),
-		'/home/connectors/default',
+		'/connectors/home/default',
 	)
 	assert.equal(
 		connectorIngressPath('custom kind', 'alpha/beta'),
@@ -51,7 +50,7 @@ test('creates connector ingress and absolute session URLs', () => {
 			kind: 'home',
 			instanceId: 'default',
 		}),
-		'https://kody.example/home/connectors/default',
+		'https://kody.example/connectors/home/default',
 	)
 	assert.equal(
 		connectorWebSocketUrl({
