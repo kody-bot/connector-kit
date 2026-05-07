@@ -9,16 +9,29 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "default": "./dist/protocol.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "default": "./dist/schema.js"
+    },
+    "./urls": {
+      "types": "./dist/urls.d.ts",
+      "default": "./dist/urls.js"
     }
   },
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
-    "test": "node --test",
+    "test": "node --test 'test/**/*.test.ts'",
     "typecheck": "tsc --noEmit",
-    "validate": "npm run typecheck && npm test && npm run build"
+    "validate": "npm run typecheck && npm run build && npm test"
   },
   "keywords": [
     "kody",
