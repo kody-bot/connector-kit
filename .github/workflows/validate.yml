@@ -45,7 +45,7 @@ jobs:
       issues: write
       pull-requests: write
     if:
-      ${{ github.repository == 'kody/connector-kit' &&
+      ${{ github.repository == 'kody-bot/connector-kit' &&
       contains('refs/heads/main,refs/heads/beta,refs/heads/next,refs/heads/alpha',
       github.ref) && github.event_name == 'push' }}
     steps:

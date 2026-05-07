@@ -30,12 +30,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kody/connector-kit.git"
+    "url": "git+https://github.com/kody-bot/connector-kit.git"
   },
   "bugs": {
-    "url": "https://github.com/kody/connector-kit/issues"
+    "url": "https://github.com/kody-bot/connector-kit/issues"
   },
-  "homepage": "https://github.com/kody/connector-kit#readme",
+  "homepage": "https://github.com/kody-bot/connector-kit#readme",
   "devDependencies": {
     "typescript": "^5.9.3"
   },
