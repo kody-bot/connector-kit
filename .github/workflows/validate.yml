@@ -16,9 +16,6 @@ concurrency:
 
 jobs:
   main:
-    strategy:
-      matrix:
-        node: [22.14.0, 24.x]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -27,7 +24,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 24.x
           cache: npm
 
       - name: Install dependencies
