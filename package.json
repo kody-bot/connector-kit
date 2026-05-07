@@ -1,0 +1,48 @@
+{
+  "name": "@kody-bot/connector-kit",
+  "version": "0.0.0-semantically-released",
+  "description": "Shared protocol helpers and types for Kody remote connectors.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run typecheck && npm test && npm run build"
+  },
+  "keywords": [
+    "kody",
+    "connector",
+    "mcp",
+    "protocol"
+  ],
+  "author": "Kent C. Dodds <me@kentcdodds.com> (https://kentcdodds.com)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kody/connector-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kody/connector-kit/issues"
+  },
+  "homepage": "https://github.com/kody/connector-kit#readme",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
