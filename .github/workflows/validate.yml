@@ -17,6 +17,11 @@ concurrency:
 jobs:
   main:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -33,35 +38,11 @@ jobs:
       - name: Run validation
         run: npm run validate
 
-  release:
-    needs: main
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-      issues: write
-      pull-requests: write
-    if:
-      ${{ github.repository == 'kody-bot/connector-kit' &&
-      contains('refs/heads/main,refs/heads/beta,refs/heads/next,refs/heads/alpha',
-      github.ref) && github.event_name == 'push' }}
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24.x
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
       - name: Release
+        if:
+          ${{ github.repository == 'kody-bot/connector-kit' &&
+          contains('refs/heads/main,refs/heads/beta,refs/heads/next,refs/heads/alpha',
+          github.ref) && github.event_name == 'push' }}
         uses: cycjimmy/semantic-release-action@v5.0.2
         with:
           semantic_version: 25
