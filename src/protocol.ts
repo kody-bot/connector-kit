@@ -46,6 +46,7 @@ export type ConnectorToolDescriptor = {
 export type ConnectorSnapshot = {
 	connectorKind: string
 	connectorId: string
+	description?: string
 	connectedAt: string
 	lastSeenAt: string
 	tools: Array<ConnectorToolDescriptor>
@@ -55,6 +56,7 @@ export type ConnectorHelloMessage = {
 	type: 'connector.hello'
 	connectorKind: string
 	connectorId: string
+	description?: string
 	sharedSecret: string
 }
 
@@ -118,6 +120,7 @@ export function parseConnectorMessage(
 		const connectorId = record['connectorId']
 		const sharedSecret = record['sharedSecret']
 		const connectorKindRaw = record['connectorKind']
+		const descriptionRaw = record['description']
 		if (
 			typeof connectorKindRaw !== 'string' ||
 			!connectorKindRaw.trim()
@@ -134,6 +137,9 @@ export function parseConnectorMessage(
 			type,
 			connectorKind,
 			connectorId,
+			...(typeof descriptionRaw === 'string' && descriptionRaw.trim()
+				? { description: descriptionRaw.trim() }
+				: {}),
 			sharedSecret,
 		}
 	}

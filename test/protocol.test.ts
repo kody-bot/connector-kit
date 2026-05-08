@@ -16,6 +16,28 @@ test('parses connector hello messages and normalizes kind', () => {
 				type: 'connector.hello',
 				connectorKind: ' CUSTOM ',
 				connectorId: 'default',
+				description: '  Custom connector for local devices.  ',
+				sharedSecret: 'secret',
+			}),
+		),
+		{
+			type: 'connector.hello',
+			connectorKind: 'custom',
+			connectorId: 'default',
+			description: 'Custom connector for local devices.',
+			sharedSecret: 'secret',
+		},
+	)
+})
+
+test('omits blank connector descriptions', () => {
+	assert.deepEqual(
+		parseConnectorMessage(
+			JSON.stringify({
+				type: 'connector.hello',
+				connectorKind: 'custom',
+				connectorId: 'default',
+				description: '  ',
 				sharedSecret: 'secret',
 			}),
 		),
