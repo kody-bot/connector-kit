@@ -30,3 +30,17 @@ Remote connectors open an outbound WebSocket to Kody and exchange JSON messages:
 
 The connector is expected to answer MCP-style JSON-RPC requests such as
 `tools/list` and `tools/call` inside `connector.jsonrpc` envelopes.
+
+## Connector URLs
+
+Production connector ingress URLs are username-scoped:
+
+```ts
+userScopedConnectorWebSocketUrl({
+	workerBaseUrl: 'https://heykody.dev',
+	username: 'kentcdodds',
+	kind: 'home',
+	instanceId: 'default',
+})
+// wss://heykody.dev/@kentcdodds/connectors/home/default
+```
