@@ -6,6 +6,8 @@ import {
 	connectorSessionKey,
 	connectorSessionUrl,
 	connectorWebSocketUrl,
+	isValidRemoteConnectorName,
+	normalizeRemoteConnectorInstanceId,
 	parseConnectorRoutePath,
 	parseUserScopedConnectorRoutePath,
 	userScopedConnectorIngressPath,
@@ -13,85 +15,97 @@ import {
 	userScopedConnectorWebSocketUrl,
 } from '../src/urls.ts'
 
+test('normalizes and validates remote connector names', () => {
+	assert.equal(normalizeRemoteConnectorInstanceId(' HOME '), 'home')
+	assert.equal(isValidRemoteConnectorName('home'), true)
+	assert.equal(isValidRemoteConnectorName('living-room'), true)
+	assert.equal(isValidRemoteConnectorName('living room'), false)
+	assert.equal(isValidRemoteConnectorName('-bad'), false)
+})
+
 test('creates connector session keys', () => {
-	assert.equal(connectorSessionKey('home', 'default'), 'home:default')
-	assert.equal(connectorSessionKey('HOME', 'living-room'), 'home:living-room')
 	assert.equal(
-		connectorSessionKey('home', 'other:default'),
-		'home:other:default',
+		connectorSessionKey('user-123', 'default'),
+		JSON.stringify(['user-123', 'default']),
 	)
-	assert.equal(connectorSessionKey('custom', 'alpha'), 'custom:alpha')
+	assert.equal(
+		connectorSessionKey(' user-123 ', 'HOME'),
+		JSON.stringify(['user-123', 'home']),
+	)
 })
 
 test('parses connector routes', () => {
 	assert.deepEqual(
-		parseConnectorRoutePath('/connectors/custom/alpha/rpc/tools-list'),
+		parseConnectorRoutePath('/connectors/alpha/rpc/tools-list'),
 		{
-			kind: 'custom',
 			instanceId: 'alpha',
 			rest: '/rpc/tools-list',
 		},
 	)
-	assert.deepEqual(parseConnectorRoutePath('/connectors/home/default'), {
-		kind: 'home',
-		instanceId: 'default',
+	assert.deepEqual(parseConnectorRoutePath('/connectors/home'), {
+		instanceId: 'home',
 		rest: '',
 	})
-	assert.equal(parseConnectorRoutePath('/connectors/custom'), null)
+	assert.deepEqual(parseConnectorRoutePath('/connectors/custom'), {
+		instanceId: 'custom',
+		rest: '',
+	})
 })
 
 test('parses username-scoped connector routes', () => {
 	assert.deepEqual(
 		parseUserScopedConnectorRoutePath(
-			'/@kentcdodds/connectors/custom/alpha/rpc/tools-list',
+			'/@kentcdodds/connectors/alpha/rpc/tools-list',
 		),
 		{
 			username: 'kentcdodds',
-			kind: 'custom',
 			instanceId: 'alpha',
 			rest: '/rpc/tools-list',
 		},
 	)
 	assert.deepEqual(
 		parseUserScopedConnectorRoutePath(
-			'/@user%40example.com/connectors/HOME/living%20room',
+			'/@user%40example.com/connectors/living-room',
 		),
 		{
 			username: 'user@example.com',
-			kind: 'home',
-			instanceId: 'living room',
+			instanceId: 'living-room',
 			rest: '',
 		},
 	)
-	assert.equal(parseUserScopedConnectorRoutePath('/connectors/home/default'), null)
-	assert.equal(parseUserScopedConnectorRoutePath('/@/connectors/home/default'), null)
-	assert.equal(parseUserScopedConnectorRoutePath('/@kentcdodds/connectors/home'), null)
+	assert.deepEqual(parseUserScopedConnectorRoutePath('/@kentcdodds/connectors/home'), {
+		username: 'kentcdodds',
+		instanceId: 'home',
+		rest: '',
+	})
+	assert.equal(parseUserScopedConnectorRoutePath('/connectors/home'), null)
+	assert.equal(parseUserScopedConnectorRoutePath('/@/connectors/home'), null)
+	assert.deepEqual(
+		parseUserScopedConnectorRoutePath('/@kentcdodds/connectors/home/default'),
+		{
+			username: 'kentcdodds',
+			instanceId: 'home',
+			rest: '/default',
+		},
+	)
 })
 
 test('creates connector ingress and absolute session URLs', () => {
-	assert.equal(
-		connectorIngressPath('home', 'default'),
-		'/connectors/home/default',
-	)
-	assert.equal(
-		connectorIngressPath('custom kind', 'alpha/beta'),
-		'/connectors/custom%20kind/alpha%2Fbeta',
-	)
+	assert.equal(connectorIngressPath('home'), '/connectors/home')
+	assert.equal(connectorIngressPath(' HOME '), '/connectors/home')
 	assert.equal(
 		connectorSessionUrl({
 			workerBaseUrl: 'https://kody.example/',
-			kind: 'home',
-			instanceId: 'default',
+			instanceId: 'home',
 		}),
-		'https://kody.example/connectors/home/default',
+		'https://kody.example/connectors/home',
 	)
 	assert.equal(
 		connectorWebSocketUrl({
 			workerBaseUrl: 'https://kody.example/',
-			kind: 'custom',
 			instanceId: 'alpha',
 		}),
-		'wss://kody.example/connectors/custom/alpha',
+		'wss://kody.example/connectors/alpha',
 	)
 })
 
@@ -100,27 +114,24 @@ test('creates username-scoped connector URLs', () => {
 	assert.equal(
 		userScopedConnectorIngressPath({
 			username: 'user@example.com',
-			kind: 'custom kind',
-			instanceId: 'alpha/beta',
+			instanceId: 'living-room',
 		}),
-		'/@user%40example.com/connectors/custom%20kind/alpha%2Fbeta',
+		'/@user%40example.com/connectors/living-room',
 	)
 	assert.equal(
 		userScopedConnectorSessionUrl({
 			workerBaseUrl: 'https://kody.example/',
 			username: 'kentcdodds',
-			kind: 'home',
-			instanceId: 'default',
+			instanceId: 'home',
 		}),
-		'https://kody.example/@kentcdodds/connectors/home/default',
+		'https://kody.example/@kentcdodds/connectors/home',
 	)
 	assert.equal(
 		userScopedConnectorWebSocketUrl({
 			workerBaseUrl: 'https://kody.example/',
 			username: 'kentcdodds',
-			kind: 'home',
-			instanceId: 'default',
+			instanceId: 'home',
 		}),
-		'wss://kody.example/@kentcdodds/connectors/home/default',
+		'wss://kody.example/@kentcdodds/connectors/home',
 	)
 })

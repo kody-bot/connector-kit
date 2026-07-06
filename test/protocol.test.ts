@@ -9,14 +9,32 @@ import {
 	stringifyConnectorMessage,
 } from '../src/protocol.ts'
 
-test('parses connector hello messages and normalizes kind', () => {
+test('parses connector hello messages and normalizes connectorId', () => {
+	assert.deepEqual(
+		parseConnectorMessage(
+			JSON.stringify({
+				type: 'connector.hello',
+				connectorId: ' DEFAULT ',
+				description: '  Custom connector for local devices.  ',
+				sharedSecret: 'secret',
+			}),
+		),
+		{
+			type: 'connector.hello',
+			connectorId: 'default',
+			description: 'Custom connector for local devices.',
+			sharedSecret: 'secret',
+		},
+	)
+})
+
+test('normalizes optional connectorKind when present', () => {
 	assert.deepEqual(
 		parseConnectorMessage(
 			JSON.stringify({
 				type: 'connector.hello',
 				connectorKind: ' CUSTOM ',
 				connectorId: 'default',
-				description: '  Custom connector for local devices.  ',
 				sharedSecret: 'secret',
 			}),
 		),
@@ -24,7 +42,6 @@ test('parses connector hello messages and normalizes kind', () => {
 			type: 'connector.hello',
 			connectorKind: 'custom',
 			connectorId: 'default',
-			description: 'Custom connector for local devices.',
 			sharedSecret: 'secret',
 		},
 	)
@@ -35,7 +52,6 @@ test('omits blank connector descriptions', () => {
 		parseConnectorMessage(
 			JSON.stringify({
 				type: 'connector.hello',
-				connectorKind: 'custom',
 				connectorId: 'default',
 				description: '  ',
 				sharedSecret: 'secret',
@@ -43,7 +59,6 @@ test('omits blank connector descriptions', () => {
 		),
 		{
 			type: 'connector.hello',
-			connectorKind: 'custom',
 			connectorId: 'default',
 			sharedSecret: 'secret',
 		},
@@ -100,7 +115,7 @@ test('rejects invalid connector messages', () => {
 			parseConnectorMessage(
 				JSON.stringify({
 					type: 'connector.hello',
-					connectorKind: 'custom',
+					connectorId: 'default',
 				}),
 			),
 		/Invalid connector hello payload/,
@@ -110,23 +125,11 @@ test('rejects invalid connector messages', () => {
 			parseConnectorMessage(
 				JSON.stringify({
 					type: 'connector.hello',
-					connectorKind: 1,
-					connectorId: 'default',
+					connectorId: '  ',
 					sharedSecret: 'secret',
 				}),
 			),
-		/connectorKind must be a non-empty string/,
-	)
-	assert.throws(
-		() =>
-			parseConnectorMessage(
-				JSON.stringify({
-					type: 'connector.hello',
-					connectorId: 'default',
-					sharedSecret: 'secret',
-				}),
-			),
-		/connectorKind must be a non-empty string/,
+		/connectorId must be a non-empty string/,
 	)
 	assert.throws(
 		() => parseConnectorMessage(JSON.stringify({ type: 'unknown' })),

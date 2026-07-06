@@ -44,7 +44,7 @@ export type ConnectorToolDescriptor = {
 }
 
 export type ConnectorSnapshot = {
-	connectorKind: string
+	connectorKind?: string
 	connectorId: string
 	description?: string
 	connectedAt: string
@@ -54,7 +54,7 @@ export type ConnectorSnapshot = {
 
 export type ConnectorHelloMessage = {
 	type: 'connector.hello'
-	connectorKind: string
+	connectorKind?: string
 	connectorId: string
 	description?: string
 	sharedSecret: string
@@ -117,26 +117,27 @@ export function parseConnectorMessage(
 	const record = value as Record<string, unknown>
 	const type = record['type']
 	if (type === 'connector.hello') {
-		const connectorId = record['connectorId']
+		const connectorIdRaw = record['connectorId']
 		const sharedSecret = record['sharedSecret']
 		const connectorKindRaw = record['connectorKind']
 		const descriptionRaw = record['description']
-		if (
-			typeof connectorKindRaw !== 'string' ||
-			!connectorKindRaw.trim()
-		) {
-			throw new Error(
-				'Invalid connector hello: connectorKind must be a non-empty string.',
-			)
-		}
-		const connectorKind = connectorKindRaw.trim().toLowerCase()
-		if (typeof connectorId !== 'string' || typeof sharedSecret !== 'string') {
+		if (typeof connectorIdRaw !== 'string' || typeof sharedSecret !== 'string') {
 			throw new Error('Invalid connector hello payload.')
 		}
+		const connectorId = connectorIdRaw.trim().toLowerCase()
+		if (!connectorId) {
+			throw new Error(
+				'Invalid connector hello: connectorId must be a non-empty string.',
+			)
+		}
+		const connectorKind =
+			typeof connectorKindRaw === 'string' && connectorKindRaw.trim()
+				? connectorKindRaw.trim().toLowerCase()
+				: undefined
 		return {
 			type,
-			connectorKind,
 			connectorId,
+			...(connectorKind ? { connectorKind } : {}),
 			...(typeof descriptionRaw === 'string' && descriptionRaw.trim()
 				? { description: descriptionRaw.trim() }
 				: {}),

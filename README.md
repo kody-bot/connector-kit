@@ -39,8 +39,15 @@ Production connector ingress URLs are username-scoped:
 userScopedConnectorWebSocketUrl({
 	workerBaseUrl: 'https://heykody.dev',
 	username: 'kentcdodds',
-	kind: 'home',
-	instanceId: 'default',
+	instanceId: 'home',
 })
-// wss://heykody.dev/@kentcdodds/connectors/home/default
+// wss://heykody.dev/@kentcdodds/connectors/home
 ```
+
+Connector names must match `^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$`. Use
+`normalizeRemoteConnectorInstanceId` and `isValidRemoteConnectorName` from
+`@kody-bot/connector-kit/urls` to normalize and validate names before connecting.
+
+The `connector.hello` message requires `connectorId` (trimmed and lowercased to
+match the URL path) and `sharedSecret`. `connectorKind` is optional and ignored
+by Kody.
